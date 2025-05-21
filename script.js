@@ -42,23 +42,31 @@ function create() {
         [3, 3, 0, 2, 2]
     ];
 
-    let TILE_SIZE = 3
+    const TILE_SIZE = 32; 
+
 
     const map = this.make.tilemap({
-        width: 5,
-        height: 5,
         tileWidth: TILE_SIZE,
-        tileHeight: TILE_SIZE
+        tileHeight: TILE_SIZE,
+        width: mapData[0].length,
+        height: mapData.length
     });
 
-    const tileset = map.addTilesetImage('tilesheet', 'frown');
-    const layer = map.createLayer(0, tileset, 0, 0);
+    const tileset = map.addTilesetImage('tilesheet', 'tilesheet', TILE_SIZE, TILE_SIZE);
 
-    layer.setCollision([1, 2]);  // Assuming 1 and 2 are walkable tiles
+
+    const layer = map.createBlankLayer('layer1', tileset);
+    layer.putTilesAt(mapData, 1, 3); 
+
+    layer.setCollision([1, 2]); 
 
 }
 
 
+// Create a blank layer and populate it with mapData
+
+
+// Set collision for specific tiles
 
 
 function update() {
