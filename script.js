@@ -86,10 +86,12 @@ function create() {
     let changeTile = 0;
 
     document.getElementById("Dropdown").addEventListener('change', function (event) {
-        console.log(event.target.value);
+        console.log(`Selected Value: ${event.target.value}`);
         changeTile = parseInt(event.target.value);
         return changeTile;
     });
+
+
 
     this.input.on('pointerdown', (pointer) => {
         // Get the tile coordinates from the pointer's world position
@@ -101,95 +103,105 @@ function create() {
 
 
         if (tileX > 14 || tileY > 14) {
-            console.log("Out of bounds");
+            console.error("Out of bounds");
             return;
         }
-        console.log(`Clicked tile coordinates: (${tileX}, ${tileY})`);
+
+
+        // THIS IS THE ROAD ASSEMBLY SYSTEM
+
+
         if (clickedTile) {
             // clickedTile.rotation += Phaser.Math.DegToRad(90); // this is how you rotate
-            console.log(`Tile index: ${clickedTile.index}`);
-            console.log(changeTile + " thems the change tile bucko")
-            breakit: if (changeTile > 19 && changeTile < 25) { // the changeTile is whatever the dropdown is set to, rn this check is useless
-                console.log("Clicked with road tile, checking surrounding tiles for roadsaaaaaaaaa");
-                let surroundingtiles = [];
-                let chosenRoad = 20;
-                console.log("Road placed " + clickedTile + " " + tileX + " " + tileY);
-                if (layer.getTileAt(tileX - 1, tileY).index == 20) {
-                    console.log("road left");
-                    surroundingtiles.push("left")
-                }
-
-                if (layer.getTileAt(tileX, tileY - 1).index == 20) {
-                    console.log("road above");
-                    surroundingtiles.push("up")
-                }
-
-                if (layer.getTileAt(tileX + 1, tileY).index == 20) {
-                    console.log("road right");
-                    surroundingtiles.push("right")
-                }
-
-                if (layer.getTileAt(tileX, tileY + 1).index == 20) {
-                    console.log("road below");
-                    surroundingtiles.push("down")
-                }
-
-                if (surroundingtiles.includes("left") &&
-                    surroundingtiles.includes("up") &&
-                    surroundingtiles.includes("right") &&
-                    surroundingtiles.includes("down")) {
-                    console.log("left, up, right, down - this should be just before work work work work work you get the idea");
-                    chosenRoad = 23;
-                }
-                layer.putTilesAt([[changeTile]], tileX, tileY); // change tile to selected tile
-                //this will do the changing of the surrounding tiles to be correct
-                console.log("===================================================================== surrounding tiles");
-                // checking if clicking with blank or clicking with road tile
-
-
+            console.info(`%cLogging what is known so far: %cClicked tile index: ${clickedTile.index} | Changed into: ${changeTile} | Tile Coords (${tileX}, ${tileY}) | And now checking surroundings`, "color: darkorange;", "color: lightgreen;");
+            let SurroundingTilesClick = [];
+            function point(value) {
+                return SurroundingTilesClick.includes(value);
             }
+            let chosenRoad = 20;
+            if (layer.getTileAt(tileX - 1, tileY).index == 20) {
+                console.log("%croad left", "color: lightblue;");
+                SurroundingTilesClick.push("left")
+            }
+            if (layer.getTileAt(tileX, tileY - 1).index == 20) {
+                console.log("%croad up", "color: lightblue;");
+                SurroundingTilesClick.push("up")
+            }
+            if (layer.getTileAt(tileX + 1, tileY).index == 20) {
+                console.log("%croad right", "color: lightblue;");
+                SurroundingTilesClick.push("right")
+            }
+            if (layer.getTileAt(tileX, tileY + 1).index == 20) {
+                console.log("%croad down", "color: lightblue;");
+                SurroundingTilesClick.push("down")
+            }
+            // this is the check if it will be a cross roads
+            if (SurroundingTilesClick.length == 4) {
+                console.log("4 objects surround");
+                chosenRoad = 23;
+            } else if (SurroundingTilesClick.length == 3) {
+                console.log("3 objects surround");
+                chosenRoad = 22;
+            } else if (SurroundingTilesClick.length == 2) {
+                if (point("left") && point("right") || point("up") && point("down")) {
+                chosenRoad = 21;
+                } else {
+                    chosenRoad = 24;
+                }
+            } else {
+                console.log("1 objects surround");
+            }
+            layer.putTilesAt([[chosenRoad]], tileX, tileY); // change tile to selected tile
+            //this will do the changing of the surrounding tiles to be correct
+            console.log("========================================================= Finshed Placing Tile, Now Checking For Updates =========================================================");
+            // checking if clicking with blank or clicking with road tile
             if (changeTile == 0) {
-                console.log("checking for blank");
+                console.log("Checking for blank");
             }
+            console.groupCollapsed("grid Info")
             for (let y = 0; y < mapData[0].length; y++) {
                 for (let x = 0; x < mapData.length; x++) {
                     const tile = layer.getTileAt(x, y);
-                    console.log("RAN");
-                    const surroundingTiles = [];
-                    if (layer.getTileAt(x - 1, y)?.index === 20 || layer.getTileAt(x - 1, y)?.index === 23) surroundingTiles.push("left");
-                    if (layer.getTileAt(x, y - 1)?.index === 20 || layer.getTileAt(x, y - 1)?.index === 23) surroundingTiles.push("up");
-                    if (layer.getTileAt(x + 1, y)?.index === 20 || layer.getTileAt(x + 1, y)?.index === 23) surroundingTiles.push("right");
-                    if (layer.getTileAt(x, y + 1)?.index === 20 || layer.getTileAt(x, y + 1)?.index === 23) surroundingTiles.push("down");
+                    console.log("Check Start");
+                    const SurroundingTilesCheck = [];
+                    if (layer.getTileAt(x - 1, y)?.index === 20 || layer.getTileAt(x - 1, y)?.index === 23) SurroundingTilesCheck.push("left");
+                    if (layer.getTileAt(x, y - 1)?.index === 20 || layer.getTileAt(x, y - 1)?.index === 23) SurroundingTilesCheck.push("up");
+                    if (layer.getTileAt(x + 1, y)?.index === 20 || layer.getTileAt(x + 1, y)?.index === 23) SurroundingTilesCheck.push("right");
+                    if (layer.getTileAt(x, y + 1)?.index === 20 || layer.getTileAt(x, y + 1)?.index === 23) SurroundingTilesCheck.push("down");
 
                     // Check if the tile's index matches the specific index
-                    if (tile.index === 20) {
-                        if (surroundingTiles.includes("left") &&
-                            surroundingTiles.includes("up") &&
-                            surroundingTiles.includes("right") &&
-                            surroundingTiles.includes("down")) {
+                    if (tile.index >= 20 && tile.index <= 24) {
+                        if (SurroundingTilesCheck.includes("left") &&
+                            SurroundingTilesCheck.includes("up") &&
+                            SurroundingTilesCheck.includes("right") &&
+                            SurroundingTilesCheck.includes("down")) {
                             console.log("left, up, right, down");
                             chosenRoad = 23;
-                            console.log(surroundingTiles);
+                            console.log(SurroundingTilesCheck);
                             layer.putTilesAt([[chosenRoad]], x, y);
                         }
-                        console.log(`Surrounding tiles: ${surroundingTiles.join(", ")}`);
-                        console.log("guh BOTTOM");
+                        console.log(`Surrounding tiles: ${SurroundingTilesCheck.join(", ")}`);
+                        console.log("Check Finish");
                     }
+
                     // if (tile.index === 23) {
-                    //     if (surroundingTiles.includes("left") &&
-                    //     surroundingTiles.includes("up") &&
-                    //     surroundingTiles.includes("right") &&
-                    //     surroundingTiles.includes("down")) {
+                    //     if (SurroundingTilesCheck.includes("left") &&
+                    //     SurroundingTilesCheck.includes("up") &&
+                    //     SurroundingTilesCheck.includes("right") &&
+                    //     SurroundingTilesCheck.includes("down")) {
                     //     console.log("left, up, right, down");
                     //     chosenRoad = 23;
-                    //     console.log(surroundingTiles);
+                    //     console.log(SurroundingTilesCheck);
                     //     layer.putTilesAt([[chosenRoad]], x, y);
 
                     // }
                     // layer.putTilesAt([[chosenRoad]], x, y);
                     // }
                 }
+
             }
+            console.log("Check Finish");
+            console.groupEnd("Check Finish");
 
 
             // return;
