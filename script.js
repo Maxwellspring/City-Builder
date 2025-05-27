@@ -119,19 +119,19 @@ function create() {
                 return SurroundingTilesClick.includes(value);
             }
             let chosenRoad = 20;
-            if (layer.getTileAt(tileX - 1, tileY).index == 20) {
+            if (layer.getTileAt(tileX - 1, tileY).index >= 20) {
                 console.log("%croad left", "color: lightblue;");
                 SurroundingTilesClick.push("left")
             }
-            if (layer.getTileAt(tileX, tileY - 1).index == 20) {
+            if (layer.getTileAt(tileX, tileY - 1).index >= 20) {
                 console.log("%croad up", "color: lightblue;");
                 SurroundingTilesClick.push("up")
             }
-            if (layer.getTileAt(tileX + 1, tileY).index == 20) {
+            if (layer.getTileAt(tileX + 1, tileY).index >= 20) {
                 console.log("%croad right", "color: lightblue;");
                 SurroundingTilesClick.push("right")
             }
-            if (layer.getTileAt(tileX, tileY + 1).index == 20) {
+            if (layer.getTileAt(tileX, tileY + 1).index >= 20) {
                 console.log("%croad down", "color: lightblue;");
                 SurroundingTilesClick.push("down")
             }
@@ -164,19 +164,26 @@ function create() {
                     const tile = layer.getTileAt(x, y);
                     console.log("Check Start");
                     const SurroundingTilesCheck = [];
-                    if (layer.getTileAt(x - 1, y)?.index === 20 || layer.getTileAt(x - 1, y)?.index === 23) SurroundingTilesCheck.push("left");
-                    if (layer.getTileAt(x, y - 1)?.index === 20 || layer.getTileAt(x, y - 1)?.index === 23) SurroundingTilesCheck.push("up");
-                    if (layer.getTileAt(x + 1, y)?.index === 20 || layer.getTileAt(x + 1, y)?.index === 23) SurroundingTilesCheck.push("right");
-                    if (layer.getTileAt(x, y + 1)?.index === 20 || layer.getTileAt(x, y + 1)?.index === 23) SurroundingTilesCheck.push("down");
+                    if (layer.getTileAt(x - 1, y)?.index >= 20) SurroundingTilesCheck.push("left");
+                    if (layer.getTileAt(x, y - 1)?.index >= 20) SurroundingTilesCheck.push("up");
+                    if (layer.getTileAt(x + 1, y)?.index >= 20) SurroundingTilesCheck.push("right");
+                    if (layer.getTileAt(x, y + 1)?.index >= 20) SurroundingTilesCheck.push("down");
 
                     // Check if the tile's index matches the specific index
-                    if (tile.index >= 20 && tile.index <= 24) {
-                        if (SurroundingTilesCheck.includes("left") &&
-                            SurroundingTilesCheck.includes("up") &&
-                            SurroundingTilesCheck.includes("right") &&
-                            SurroundingTilesCheck.includes("down")) {
-                            console.log("left, up, right, down");
+                    if (tile.index >= 20) { //  && tile.index <= 24
+                        if (SurroundingTilesCheck.length == 4) {
+                            // console.log("left, up, right, down");
                             chosenRoad = 23;
+                            console.log(SurroundingTilesCheck);
+                            layer.putTilesAt([[chosenRoad]], x, y);
+                        } else if (SurroundingTilesCheck.length == 3) {
+                            // console.log("left, up, right, down");
+                            chosenRoad = 22;
+                            console.log(SurroundingTilesCheck);
+                            layer.putTilesAt([[chosenRoad]], x, y);
+                        } else if (SurroundingTilesCheck.length == 2) {
+                            // console.log("left, up, right, down");
+                            chosenRoad = 21;
                             console.log(SurroundingTilesCheck);
                             layer.putTilesAt([[chosenRoad]], x, y);
                         }
