@@ -115,7 +115,8 @@ function create() {
             // clickedTile.rotation += Phaser.Math.DegToRad(90); // this is how you rotate
             console.info(`%cLogging what is known so far: %cClicked tile index: ${clickedTile.index} | Changed into: ${changeTile} | Tile Coords (${tileX}, ${tileY}) | And now checking surroundings`, "color: darkorange;", "color: lightgreen;");
             let SurroundingTilesClick = [];
-            function point(value) {
+            let rotationValue = 0
+            function p(value) {
                 return SurroundingTilesClick.includes(value);
             }
             let chosenRoad = 20;
@@ -143,15 +144,18 @@ function create() {
                 console.log("3 objects surround");
                 chosenRoad = 22;
             } else if (SurroundingTilesClick.length == 2) {
-                if (point("left") && point("right") || point("up") && point("down")) {
+                if (p("left") && p("right")) {
                 chosenRoad = 21;
-                } else {
-                    chosenRoad = 24;
+                } else if (p("up") && p("down")) {
+                    chosenRoad = 21;
+                    rotationValue = 90; // this is the rotation value for the up and down road
                 }
             } else {
                 console.log("1 objects surround");
             }
             layer.putTilesAt([[chosenRoad]], tileX, tileY); // change tile to selected tile
+            clickedTile.rotation = Phaser.Math.DegToRad(rotationValue); 
+
             //this will do the changing of the surrounding tiles to be correct
             console.log("========================================================= Finshed Placing Tile, Now Checking For Updates =========================================================");
             // checking if clicking with blank or clicking with road tile
