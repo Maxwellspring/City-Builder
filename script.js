@@ -33,6 +33,8 @@ const left = "left";
 const right = "right";
 
 let power = document.getElementById("power")
+let popul = document.getElementById("pop")
+let money = document.getElementById("money")
 
 
 function preload() {
@@ -40,7 +42,7 @@ function preload() {
     this.load.image("frown", "media/bye.png");
     this.load.image("debug", "media/debug.png");
     this.load.image("testTile", "media/5x5 tile map.png");
-    this.load.image("Atlas", "media/5x5 tile map V4.png");
+    this.load.image("Atlas", "media/5x5 tile map V5.png");
 }
 
 function create() {
@@ -286,14 +288,17 @@ function create() {
     });
 }
 
+let cityMoney = 0
+let oldMoney = 0
+
 // console.groupCollapsed("sd");
 function update() {
     // Game loop logic, nothing needed here for this functionality
-    function checkIfAnyTileIsIndex4() {
+    function checkTile(index) {
         let powerPlants = 0; // Initialize a counter for tiles with index 4
         for (let y = 0; y < this.mapData.length; y++) {
             for (let x = 0; x < this.mapData[y].length; x++) {
-                if (this.mapData[y][x] == 3) {
+                if (this.mapData[y][x] == index) {
                     powerPlants++
                     // return true; // Found a tile with index 4
                 }
@@ -303,22 +308,55 @@ function update() {
         // return false; // No tile with index 4 found
     }
 
-    let checkfor4 = checkIfAnyTileIsIndex4.call(this)
+    let powerPlants = checkTile.call(this, 3)
+    let houses = checkTile.call(this, 1) // Assuming index 1 is for houses
 
-    // Then call it like this:
-    if (checkfor4) { // Use .call(this) to ensure 'this' context is correct
-        console.log("Yes, there is at least one grid block with an index of 4.");
-        console.log(checkfor4)
-    } else {
-        console.log("No grid block with an index of 4 found.");
-    }
-
+    let cityHouse = 0
     let cityPower = 0
 
-    cityPower += checkfor4 * 10
-
-    power.innerHTML = `Power: ${cityPower} |`; // Update the power count display
 
 
+    if (powerPlants > 0) {
+        cityMoney += powerPlants * -4
+        cityPower = powerPlants * 15
+    }
+
+    if (houses > 0) {
+        cityPower -= houses * 3
+        cityMoney += houses * 1
+    }
+
+    if (cityPower < 0) {
+        cityMoney -= cityPower * -4
+    }
+
+
+
+    power.innerHTML = `Power: ${cityPower} |`; // Update the power count display 
+    popul.innerHTML = `Population: ${cityHouse} |`; // Update the population display
+    money.innerHTML = `Money: ${cityMoney}`; // Update the money display
+
+    console.log(`oldMoney: ${oldMoney} currentMoney: ${cityMoney}`)
+    if (cityMoney) {
+        if (cityMoney < 0) {
+            if (cityMoney < oldMoney) {
+                money.style.color = "red"
+                // return
+            } else {
+                money.style.color = "orange"
+            }
+
+        } else {
+            if (cityMoney < oldMoney) {
+                money.style.color = "yellow"
+                return
+            } else {
+                money.style.color = "lightgreen"
+            }
+        }
+        
+    }
+
+    oldMoney = cityMoney
 }
 // console.groupEnd("ds");
