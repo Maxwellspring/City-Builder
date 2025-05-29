@@ -32,6 +32,8 @@ const down = "down";
 const left = "left";
 const right = "right";
 
+let power = document.getElementById("power")
+
 
 function preload() {
     this.load.image("smile", "media/hello.png");
@@ -103,6 +105,9 @@ function create() {
     // Helper to check if a tile index is a road tile (adjust range if needed)
     const isRoadTile = (tileIndex) => tileIndex >= 20 && tileIndex <= 24;
 
+
+
+
     this.input.on('pointerdown', (pointer) => {
         const tileX = this.map.worldToTileX(pointer.worldX);
         const tileY = this.map.worldToTileY(pointer.worldY);
@@ -166,6 +171,12 @@ function create() {
                 rotToApply = 0; // Default rotation for a single road tile
             }
         }
+
+
+
+
+
+
         // If changeTile is not 0 AND not a road tile (e.g., a "house" tile),
         // then tileToPlace remains its initial value of 'changeTile', and rotation is 0.
         // No special road logic applies.
@@ -275,7 +286,39 @@ function create() {
     });
 }
 
-
+// console.groupCollapsed("sd");
 function update() {
     // Game loop logic, nothing needed here for this functionality
+    function checkIfAnyTileIsIndex4() {
+        let powerPlants = 0; // Initialize a counter for tiles with index 4
+        for (let y = 0; y < this.mapData.length; y++) {
+            for (let x = 0; x < this.mapData[y].length; x++) {
+                if (this.mapData[y][x] == 3) {
+                    powerPlants++
+                    // return true; // Found a tile with index 4
+                }
+            }
+        }
+        return powerPlants
+        // return false; // No tile with index 4 found
+    }
+
+    let checkfor4 = checkIfAnyTileIsIndex4.call(this)
+
+    // Then call it like this:
+    if (checkfor4) { // Use .call(this) to ensure 'this' context is correct
+        console.log("Yes, there is at least one grid block with an index of 4.");
+        console.log(checkfor4)
+    } else {
+        console.log("No grid block with an index of 4 found.");
+    }
+
+    let cityPower = 0
+
+    cityPower += checkfor4 * 10
+
+    power.innerHTML = `Power: ${cityPower} |`; // Update the power count display
+
+
 }
+// console.groupEnd("ds");

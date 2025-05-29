@@ -3,6 +3,7 @@
 }
 
 #OSUI-Holder {
+    font-family: Arial, Helvetica, sans-serif;
     display: flex;
     width: 100vw;
     height: 100vh;
@@ -14,11 +15,13 @@
 }
 
 #onscreenUI {
+    justify-content: end;
     pointer-events: all;
-
     width: 40%;
     height: 10%;
     background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     color: white;
+    border: white 2px solid;
+    border-radius: 5px;
 }
