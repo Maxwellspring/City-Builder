@@ -113,55 +113,57 @@ function create() {
         }
 
         let tileToPlace = changeTile;     // Default to whatever is selected in the dropdown
-        let rotationToApply = 0; // Default rotation
+        let rotToApply = 0; // Default rotation
 
         // --- Determine Tile to Place and its Rotation for the CLICKED TILE ---
         if (changeTile === 0) {
             // If the user selected 'blank' (0) from the dropdown, always place a blank tile.
             tileToPlace = 0;
-            rotationToApply = 0;
+            rotToApply = 0;
         } else if (isRoadTile(changeTile)) {
             // If the user selected a road tile type (20-24) from the dropdown
-            let surroundingRoads = [];
+            let surroundingRoadsClick = [];
             // Check for surrounding *existing* road tiles to determine the new road's shape
-            if (isRoadTile(getTileIndex(tileX - 1, tileY))) surroundingRoads.push(left);
-            if (isRoadTile(getTileIndex(tileX, tileY - 1))) surroundingRoads.push(up);
-            if (isRoadTile(getTileIndex(tileX + 1, tileY))) surroundingRoads.push(right);
-            if (isRoadTile(getTileIndex(tileX, tileY + 1))) surroundingRoads.push(down);
+            if (isRoadTile(getTileIndex(tileX - 1, tileY))) surroundingRoadsClick.push(left);
+            if (isRoadTile(getTileIndex(tileX, tileY - 1))) surroundingRoadsClick.push(up);
+            if (isRoadTile(getTileIndex(tileX + 1, tileY))) surroundingRoadsClick.push(right);
+            if (isRoadTile(getTileIndex(tileX, tileY + 1))) surroundingRoadsClick.push(down);
+
+            function p(value) { return surroundingRoadsClick.includes(value); }
 
             // Logic to determine the road type (index) and its rotation
-            if (surroundingRoads.length === 4) {
+            if (surroundingRoadsClick.length === 4) {
                 tileToPlace = 23; // Crossroads
-                rotationToApply = 0; // No specific rotation for 4-way
-            } else if (surroundingRoads.length === 3) {
+                rotToApply = 0; // No specific rotation for 4-way
+            } else if (surroundingRoadsClick.length === 3) {
                 tileToPlace = 22; // T-junction
-                if (!surroundingRoads.includes(right)) rotationToApply = 270; // Missing right, opening is right
-                else if (!surroundingRoads.includes(down)) rotationToApply = 0;   // Missing down, opening is down
-                else if (!surroundingRoads.includes(left)) rotationToApply = 90;  // Missing left, opening is left
-                else if (!surroundingRoads.includes(up)) rotationToApply = 180;  // Missing up, opening is up
-            } else if (surroundingRoads.length === 2) {
-                if ((surroundingRoads.includes(left) && surroundingRoads.includes(right)) ||
-                    (surroundingRoads.includes(up) && surroundingRoads.includes(down))) {
+                if (!p(right)) rotToApply = 270; // Missing right, opening is right
+                else if (!p(down)) rotToApply = 0;   // Missing down, opening is down
+                else if (!p(left)) rotToApply = 90;  // Missing left, opening is left
+                else if (!p(up)) rotToApply = 180;  // Missing up, opening is up
+            } else if (surroundingRoadsClick.length === 2) {
+                if ((p(left) && p(right)) ||
+                    (p(up) && p(down))) {
                     tileToPlace = 21; // Straight road
-                    if (surroundingRoads.includes(up) && surroundingRoads.includes(down)) rotationToApply = 90; // Vertical straight
-                    else rotationToApply = 0; // Horizontal straight
+                    if (p(up) && p(down)) rotToApply = 90; // Vertical straight
+                    else rotToApply = 0; // Horizontal straight
                 } else {
                     tileToPlace = 24; // Corner road
-                    if (surroundingRoads.includes(up) && surroundingRoads.includes(right)) rotationToApply = 0;
-                    else if (surroundingRoads.includes(right) && surroundingRoads.includes(down)) rotationToApply = 90;
-                    else if (surroundingRoads.includes(down) && surroundingRoads.includes(left)) rotationToApply = 180;
-                    else if (surroundingRoads.includes(left) && surroundingRoads.includes(up)) rotationToApply = 270;
+                    if (p(up) && p(right)) rotToApply = 0;
+                    else if (p(right) && p(down)) rotToApply = 90;
+                    else if (p(down) && p(left)) rotToApply = 180;
+                    else if (p(left) && p(up)) rotToApply = 270;
                 }
-            } else if (surroundingRoads.length === 1) {
+            } else if (surroundingRoadsClick.length === 1) {
                 tileToPlace = 20; // Dead end / single road
-                if (surroundingRoads.includes(left)) rotationToApply = 180;
-                else if (surroundingRoads.includes(up)) rotationToApply = 270;
-                else if (surroundingRoads.includes(right)) rotationToApply = 0;
-                else if (surroundingRoads.includes(down)) rotationToApply = 90;
+                if (p(left)) rotToApply = 180;
+                else if (p(up)) rotToApply = 270;
+                else if (p(right)) rotToApply = 0;
+                else if (p(down)) rotToApply = 90;
             } else {
                 // No surrounding roads, but we're trying to place a road tile
                 tileToPlace = 20; // Default to a single road tile (dead end)
-                rotationToApply = 0; // Default rotation for a single road tile
+                rotToApply = 0; // Default rotation for a single road tile
             }
         }
         // If changeTile is not 0 AND not a road tile (e.g., a "house" tile),
@@ -173,9 +175,9 @@ function create() {
         this.layer.putTileAt(tileToPlace, tileX, tileY); // Use putTileAt for single tile
         const newClickedTile = this.layer.getTileAt(tileX, tileY);
         if (newClickedTile) {
-            newClickedTile.rotation = Phaser.Math.DegToRad(rotationToApply);
+            newClickedTile.rotation = Phaser.Math.DegToRad(rotToApply);
         }
-        console.log(`Placed tile at (${tileX}, ${tileY}) with index ${tileToPlace} and rotation ${rotationToApply}`);
+        console.log(`Placed tile at (${tileX}, ${tileY}) with index ${tileToPlace} and rotation ${rotToApply}`);
 
         // --- Re-evaluate and update surrounding tiles ---
         console.log("================================ Finished Placing Tile, Now Checking For Neighbor updates ================================");
@@ -199,52 +201,54 @@ function create() {
             const currentTile = this.layer.getTileAt(x, y);
             // If the tile is not currently a road, or doesn't exist, we don't need to re-evaluate its connections.
             if (!currentTile || !isRoadTile(currentTile.index)) {
-                 // UNLESS it was just turned into a blank and its neighbors need to react
-                 // This part needs careful handling: if the clicked tile was made blank,
-                 // its *previous* neighbors might need to change their road type.
-                 // For now, this condition is fine as is, and the `isRoadTile` check below handles it.
+                // UNLESS it was just turned into a blank and its neighbors need to react
+                // This part needs careful handling: if the clicked tile was made blank,
+                // its *previous* neighbors might need to change their road type.
+                // For now, this condition is fine as is, and the `isRoadTile` check below handles it.
                 return;
             }
 
-            let neighborRoads = [];
+            let surroundingRoadsCheck = [];
             // Check for surrounding *existing* road tiles for THIS neighbor
-            if (isRoadTile(getTileIndex(x - 1, y))) neighborRoads.push(left);
-            if (isRoadTile(getTileIndex(x, y - 1))) neighborRoads.push(up);
-            if (isRoadTile(getTileIndex(x + 1, y))) neighborRoads.push(right);
-            if (isRoadTile(getTileIndex(x, y + 1))) neighborRoads.push(down);
+            if (isRoadTile(getTileIndex(x - 1, y))) surroundingRoadsCheck.push(left);
+            if (isRoadTile(getTileIndex(x, y - 1))) surroundingRoadsCheck.push(up);
+            if (isRoadTile(getTileIndex(x + 1, y))) surroundingRoadsCheck.push(right);
+            if (isRoadTile(getTileIndex(x, y + 1))) surroundingRoadsCheck.push(down);
+
+            function o(value) { return surroundingRoadsCheck.includes(value); }
 
             let newChosenRoad = 0; // Default for non-road
-            let newRotationValue = 0;
+            let newRotVal = 0;
 
             // Re-evaluate current tile's road type based on its updated neighbors
-            if (neighborRoads.length === 4) {
+            if (surroundingRoadsCheck.length === 4) {
                 newChosenRoad = 23;
-                newRotationValue = 0;
-            } else if (neighborRoads.length === 3) {
+                newRotVal = 0;
+            } else if (surroundingRoadsCheck.length === 3) {
                 newChosenRoad = 22;
-                if (!neighborRoads.includes(right)) newRotationValue = 270;
-                else if (!neighborRoads.includes(down)) newRotationValue = 0;
-                else if (!neighborRoads.includes(left)) newRotationValue = 90;
-                else if (!neighborRoads.includes(up)) newRotationValue = 180;
-            } else if (neighborRoads.length === 2) {
-                if ((neighborRoads.includes(left) && neighborRoads.includes(right)) ||
-                    (neighborRoads.includes(up) && neighborRoads.includes(down))) {
+                if (!o(right)) newRotVal = 90;
+                else if (!o(down)) newRotVal = 180;
+                else if (!o(left)) newRotVal = 270;
+                else if (!o(up)) newRotVal = 0;
+            } else if (surroundingRoadsCheck.length === 2) {
+                if ((o(left) && o(right)) ||
+                    (o(up) && o(down))) {
                     newChosenRoad = 21;
-                    if (neighborRoads.includes(up) && neighborRoads.includes(down)) newRotationValue = 90;
-                    else newRotationValue = 0;
+                    if (o(up) && o(down)) newRotVal = 90;
+                    else newRotVal = 0;
                 } else { // It's a corner
                     newChosenRoad = 24;
-                    if (neighborRoads.includes(up) && neighborRoads.includes(right)) newRotationValue = 0;
-                    else if (neighborRoads.includes(right) && neighborRoads.includes(down)) newRotationValue = 90;
-                    else if (neighborRoads.includes(down) && neighborRoads.includes(left)) newRotationValue = 180;
-                    else if (neighborRoads.includes(left) && neighborRoads.includes(up)) newRotationValue = 270;
+                    if (o(up) && o(right)) newRotVal = 90;
+                    else if (o(right) && o(down)) newRotVal = 180;
+                    else if (o(down) && o(left)) newRotVal = 270;
+                    else if (o(left) && o(up)) newRotVal = 0;
                 }
-            } else if (neighborRoads.length === 1) {
+            } else if (surroundingRoadsCheck.length === 1) {
                 newChosenRoad = 20;
-                if (neighborRoads.includes(left)) newRotationValue = 180;
-                else if (neighborRoads.includes(up)) newRotationValue = 270;
-                else if (neighborRoads.includes(right)) newRotationValue = 0;
-                else if (neighborRoads.includes(down)) newRotationValue = 90;
+                if (o(left)) newRotVal = 180;
+                else if (o(up)) newRotVal = 270;
+                else if (o(right)) newRotVal = 0;
+                else if (o(down)) newRotVal = 90;
             } else {
                 // If a road tile now has no road neighbors, it should either become blank (if you removed it)
                 // or a single road tile (20) if it just lost connections but is still logically a road.
@@ -253,16 +257,16 @@ function create() {
                 // If it was explicitly set to 0 by the user click, that already happened for the clicked tile.
                 // For neighbors, if they were roads and now have no road connections, they should become single roads (20).
                 newChosenRoad = 20; // Default to single road if no connections
-                newRotationValue = 0;
+                newRotVal = 0;
             }
 
             // Only update the tile if its visual representation or rotation needs to change
-            if (currentTile.index !== newChosenRoad || currentTile.rotation !== Phaser.Math.DegToRad(newRotationValue)) {
+            if (currentTile.index !== newChosenRoad || currentTile.rotation !== Phaser.Math.DegToRad(newRotVal)) {
                 this.mapData[y][x] = newChosenRoad; // update internal data
                 this.layer.putTileAt(newChosenRoad, x, y); // Use putTileAt for single tile
                 const updatedTile = this.layer.getTileAt(x, y);
                 if (updatedTile) {
-                    updatedTile.rotation = Phaser.Math.DegToRad(newRotationValue);
+                    updatedTile.rotation = Phaser.Math.DegToRad(newRotVal);
                 }
             }
         });
