@@ -35,6 +35,7 @@ const right = "right";
 let power = document.getElementById("power")
 let popul = document.getElementById("pop")
 let money = document.getElementById("money")
+let mondf = document.getElementById("moneydiff")
 
 
 function preload() {
@@ -44,6 +45,9 @@ function preload() {
     this.load.image("testTile", "media/5x5 tile map.png");
     this.load.image("Atlas", "media/5x5 tile map V5.png");
 }
+
+let cityMoney = 10000
+let oldMoney = 10000
 
 function create() {
     document.addEventListener('contextmenu', event => event.preventDefault());
@@ -174,6 +178,29 @@ function create() {
             }
         }
 
+        function tell(message) {
+            let telll = document.getElementById("tell");
+            telll.innerHTML = "" + message;
+            setTimeout(function(){
+                telll.innerHTML = ""
+            }, 1000);
+        }
+
+        if (changeTile < 20) {
+            if (changeTile == 0) {
+
+            } else if (changeTile == 1 && cityMoney > 1000) { // house
+                cityMoney -= 1000;
+            } else if (changeTile == 2 && cityMoney > 1700) { // house
+                cityMoney -= 1700;
+            } else if (changeTile == 3 && cityMoney > 3000) { // house
+                cityMoney -= 3000;
+            } else {
+                tell("not enough $$$")
+                return
+            }
+        }
+        oldMoney = cityMoney
 
 
 
@@ -288,8 +315,8 @@ function create() {
     });
 }
 
-let cityMoney = 0
-let oldMoney = 0
+
+
 
 // console.groupCollapsed("sd");
 function update() {
@@ -317,24 +344,25 @@ function update() {
 
 
     if (powerPlants > 0) {
-        cityMoney += powerPlants * -4
-        cityPower = powerPlants * 15
+        cityMoney -= powerPlants * 1
+        cityPower = powerPlants * 2
     }
 
     if (houses > 0) {
-        cityPower -= houses * 3
+        cityPower -= houses * 1
         cityMoney += houses * 1
     }
 
     if (cityPower < 0) {
-        cityMoney -= cityPower * -4
+        cityMoney += cityPower * 2
     }
 
-
+    let moneydifference = cityMoney - oldMoney
 
     power.innerHTML = `Power: ${cityPower} |`; // Update the power count display 
     popul.innerHTML = `Population: ${cityHouse} |`; // Update the population display
-    money.innerHTML = `Money: ${cityMoney}`; // Update the money display
+    money.innerHTML = `Money: ${cityMoney/100}`; // Update the money display\
+    mondf.innerHTML = `gain/loss: ${moneydifference}`
 
     console.log(`oldMoney: ${oldMoney} currentMoney: ${cityMoney}`)
     if (cityMoney) {
@@ -349,13 +377,15 @@ function update() {
         } else {
             if (cityMoney < oldMoney) {
                 money.style.color = "yellow"
-                return
+                // return
             } else {
                 money.style.color = "lightgreen"
             }
         }
         
     }
+
+    
 
     oldMoney = cityMoney
 }
