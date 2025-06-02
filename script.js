@@ -49,6 +49,8 @@ function preload() {
 let cityMoney = 10000
 let oldMoney = 10000
 
+const roadValues = {};
+
 function create() {
     document.addEventListener('contextmenu', event => event.preventDefault());
 
@@ -66,7 +68,7 @@ function create() {
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -123,8 +125,22 @@ function create() {
             return;
         }
 
+        
+
+               
         let tileToPlace = changeTile;     // Default to whatever is selected in the dropdown
         let rotToApply = 0; // Default rotation
+
+        if (tileToPlace != 0) {
+            console.warn("tile to place is NOT blank")
+            let tileindexcheck = getTileIndex(tileX, tileY); // Get the tile index at the clicked position
+            if (tileindexcheck != 0) {
+                console.warn("tile at location clicked is NOT blank")
+                console.log(getTileIndex(tileX, tileY));
+                console.log(`Tile at (${tileX}, ${tileY}) has index: ${getTileIndex(tileX, tileY)}`);
+                return // Log the tile index at the clicked position
+            } 
+        }
 
         // --- Determine Tile to Place and its Rotation for the CLICKED TILE ---
         if (changeTile === 0) {
@@ -314,6 +330,8 @@ function create() {
         console.groupEnd("Neighbor update Info");
     });
 }
+
+
 
 
 
