@@ -1,13 +1,16 @@
+var gridElement = document.getElementById('grid');
 var config = {
     type: Phaser.AUTO,
-    width: window.innerWidth,
-    height: window.innerHeight,
+    width: gridElement.clientWidth, // Use clientWidth to get the actual width of the #grid element
+    height: gridElement.clientHeight, // Use clientHeight to get the actual height of the #grid element
+    parent: 'grid', // Attach Phaser canvas to the #grid element
     pixelArt: true,
     scene: {
         preload: preload,
         create: create,
         update: update
-    }, physics: {
+    },
+    physics: {
         default: 'arcade',
         arcade: {
             gravity: { y: 0 },
@@ -16,15 +19,18 @@ var config = {
     }
 };
 
-window.addEventListener('resize', resize, false);
+// var canvas = document.querySelector('canvas');
+// canvas.style.width = gridElement.clientWidth + 'px';
+// canvas.style.height = gridElement.clientHeight + 'px';
 
-function resize() {
+var game = new Phaser.Game(config);
+
+// Handle resizing dynamically
+window.addEventListener('resize', () => {
     config.width = window.innerWidth;
     config.height = window.innerHeight;
     game.scale.resize(config.width, config.height);
-}
-
-var game = new Phaser.Game(config);
+});
 
 // Define global constants for directions
 const up = "up";
@@ -36,6 +42,63 @@ let power = document.getElementById("power")
 let popul = document.getElementById("pop")
 let money = document.getElementById("money")
 let mondf = document.getElementById("moneydiff")
+let pauseButton = document.getElementById("pause")
+let playButton = document.getElementById("play")
+let updateButton = document.getElementById("update")
+
+
+
+
+let isGamePaused = false;
+
+function setGamePaused(value) {
+    return isGamePaused = value;
+}
+
+function gamePause() {
+    // Pause the game logic
+    setGamePaused(true); // Set the paused state to true
+    setTimeout(() => {
+        game.loop.sleep();
+    }, 1)
+    game.loop.wake();
+
+    console.log("Game paused");
+}
+
+function gamePlay() {
+    // Resume the game logic
+    setGamePaused(false); // Set the paused state to false
+    game.loop.wake();
+    console.log("Game resumed");
+}
+
+function gameUpdate() {
+    if (isGamePaused) {
+        setTimeout(() => {
+            updateButton.style.color = "black";
+            updateButton.style.backgroundColor = "white";
+            updateButton.style.borderColor = "black";
+            game.loop.sleep();
+        }, 1)
+        updateButton.style.color = "white";
+        updateButton.style.backgroundColor = "orange";
+        updateButton.style.borderColor = "white";
+    
+        pauseButton.style.color = "black";
+        pauseButton.style.backgroundColor = "white";
+        pauseButton.style.borderColor = "black";
+    
+        playButton.style.color = "black";
+        playButton.style.backgroundColor = "white";
+        playButton.style.borderColor = "black";
+
+        game.loop.wake();
+    }
+}
+
+
+
 
 
 function preload() {
@@ -43,7 +106,7 @@ function preload() {
     this.load.image("frown", "media/bye.png");
     this.load.image("debug", "media/debug.png");
     this.load.image("testTile", "media/5x5 tile map.png");
-    this.load.image("Atlas", "media/5x5 tile map V5.png");
+    this.load.image("Atlas", "media/5x5 tile map V6.png");
 }
 
 let cityMoney = 10000
@@ -52,6 +115,10 @@ let oldMoney = 10000
 const roadValues = {};
 
 function create() {
+
+
+
+
     document.addEventListener('contextmenu', event => event.preventDefault());
 
     this.backgroundImage = this.add.image(0, 0, "smile").setOrigin(0, 0);
@@ -82,7 +149,7 @@ function create() {
         tileWidth: this.TILE_SIZE,
         tileHeight: this.TILE_SIZE,
         width: this.mapData[0].length,
-        height: this.mapData.length
+        height: this.mapData.length,
     });
 
     const tileset = this.map.addTilesetImage('frown', "Atlas", this.TILE_SIZE, this.TILE_SIZE);
@@ -125,21 +192,35 @@ function create() {
             return;
         }
 
-        
 
-               
+
+
         let tileToPlace = changeTile;     // Default to whatever is selected in the dropdown
         let rotToApply = 0; // Default rotation
+
+
+
+        function tell(message) {
+            let telll = document.getElementById("tell");
+            telll.innerHTML = "" + message;
+            setTimeout(function () {
+                telll.innerHTML = ""
+            }, 1000);
+        }
+
+
+
 
         if (tileToPlace != 0) {
             console.warn("tile to place is NOT blank")
             let tileindexcheck = getTileIndex(tileX, tileY); // Get the tile index at the clicked position
             if (tileindexcheck != 0) {
                 console.warn("tile at location clicked is NOT blank")
+                tell("Obscured")
                 console.log(getTileIndex(tileX, tileY));
                 console.log(`Tile at (${tileX}, ${tileY}) has index: ${getTileIndex(tileX, tileY)}`);
                 return // Log the tile index at the clicked position
-            } 
+            }
         }
 
         // --- Determine Tile to Place and its Rotation for the CLICKED TILE ---
@@ -155,6 +236,31 @@ function create() {
             if (isRoadTile(getTileIndex(tileX, tileY - 1))) surroundingRoadsClick.push(up);
             if (isRoadTile(getTileIndex(tileX + 1, tileY))) surroundingRoadsClick.push(right);
             if (isRoadTile(getTileIndex(tileX, tileY + 1))) surroundingRoadsClick.push(down);
+
+            let values = [];
+
+// Collect values from the surrounding tiles
+if (isRoadTile(getTileIndex(tileX - 1, tileY))) {
+    const leftValue = this.layer.getTileAt(tileX - 1, tileY)?.properties?.serial;
+    if (leftValue != undefined) values.push(leftValue);
+}
+if (isRoadTile(getTileIndex(tileX, tileY - 1))) {
+    const upValue = this.layer.getTileAt(tileX, tileY - 1)?.properties?.serial;
+    if (upValue != undefined) values.push(upValue);
+}
+if (isRoadTile(getTileIndex(tileX + 1, tileY))) {
+    const rightValue = this.layer.getTileAt(tileX + 1, tileY)?.properties?.serial;
+    if (rightValue != undefined) values.push(rightValue);
+}
+if (isRoadTile(getTileIndex(tileX, tileY + 1))) {
+    const downValue = this.layer.getTileAt(tileX, tileY + 1)?.properties?.serial;
+    if (downValue != undefined) values.push(downValue);
+}
+
+// Find the largest value
+const largestValue = values.length > 0 ? Math.max(...values) : null;
+
+console.log(`Largest value: ${largestValue}`);
 
             function p(value) { return surroundingRoadsClick.includes(value); }
 
@@ -194,22 +300,34 @@ function create() {
             }
         }
 
-        function tell(message) {
-            let telll = document.getElementById("tell");
-            telll.innerHTML = "" + message;
-            setTimeout(function(){
-                telll.innerHTML = ""
-            }, 1000);
-        }
+
 
         if (changeTile < 20) {
             if (changeTile == 0) {
+                if (getTileIndex(tileX, tileY) == 0) {
 
+                } else if (getTileIndex(tileX, tileY) == 1) {
+                    tell("house demolished")
+                    cityMoney += 1000 / 2;
+
+                } else if (getTileIndex(tileX, tileY) == 2) {
+                    tell("commercial demolished")
+                    cityMoney += 1700 / 2;
+
+                } else if (getTileIndex(tileX, tileY) == 3) {
+                    tell("power plant demolished")
+                    cityMoney += 3000 / 2;
+
+                } else {
+                    tell("road demolished")
+                    // Default demolition cost for other tiles
+                    return
+                }
             } else if (changeTile == 1 && cityMoney > 1000) { // house
                 cityMoney -= 1000;
-            } else if (changeTile == 2 && cityMoney > 1700) { // house
+            } else if (changeTile == 2 && cityMoney > 1700) { // commercial
                 cityMoney -= 1700;
-            } else if (changeTile == 3 && cityMoney > 3000) { // house
+            } else if (changeTile == 3 && cityMoney > 3000) { // powerplant
                 cityMoney -= 3000;
             } else {
                 tell("not enough $$$")
@@ -219,7 +337,7 @@ function create() {
         oldMoney = cityMoney
 
 
-
+        let chosenNumber = Math.floor(Math.random() * 1000000); // Generate a random number for the tile's serial property
 
 
         // If changeTile is not 0 AND not a road tile (e.g., a "house" tile),
@@ -229,11 +347,18 @@ function create() {
         // update the internal mapData array and then the layer for the CLICKED TILE
         this.mapData[tileY][tileX] = tileToPlace;
         this.layer.putTileAt(tileToPlace, tileX, tileY); // Use putTileAt for single tile
+
+        // let recentlyPlacedTile = this.layer.getTileAt(tileX, tileY);
+
+
         const newClickedTile = this.layer.getTileAt(tileX, tileY);
+
+        newClickedTile.properties = { serial: chosenNumber }; // Mark the tile as placed
+        
         if (newClickedTile) {
             newClickedTile.rotation = Phaser.Math.DegToRad(rotToApply);
         }
-        console.log(`Placed tile at (${tileX}, ${tileY}) with index ${tileToPlace} and rotation ${rotToApply}`);
+        console.log(`Placed tile at (${tileX}, ${tileY}) with index ${tileToPlace} and rotation ${rotToApply} along with the serial number ${ chosenNumber }`);
 
         // --- Re-evaluate and update surrounding tiles ---
         console.log("================================ Finished Placing Tile, Now Checking For Neighbor updates ================================");
@@ -377,9 +502,9 @@ function update() {
 
     let moneydifference = cityMoney - oldMoney
 
-    power.innerHTML = `Power: ${cityPower} |`; // Update the power count display 
-    popul.innerHTML = `Population: ${cityHouse} |`; // Update the population display
-    money.innerHTML = `Money: ${cityMoney/100}`; // Update the money display\
+    power.innerHTML = `Power: ${cityPower}`; // Update the power count display 
+    popul.innerHTML = `Population: ${cityHouse}`; // Update the population display
+    money.innerHTML = `Money: ${cityMoney / 100}`; // Update the money display\
     mondf.innerHTML = `gain/loss: ${moneydifference}`
 
     console.log(`oldMoney: ${oldMoney} currentMoney: ${cityMoney}`)
@@ -400,10 +525,29 @@ function update() {
                 money.style.color = "lightgreen"
             }
         }
-        
+
     }
 
-    
+    if (isGamePaused) {
+        pauseButton.style.color = "white";
+        pauseButton.style.backgroundColor = "red";
+        pauseButton.style.borderColor = "white";
+
+        playButton.style.color = "black";
+        playButton.style.backgroundColor = "white";
+        playButton.style.borderColor = "black";
+    } else if (!isGamePaused) {
+        pauseButton.style.color = "black";
+        pauseButton.style.backgroundColor = "white";
+        pauseButton.style.borderColor = "black";
+
+        playButton.style.color = "white";
+        playButton.style.backgroundColor = "green";
+        playButton.style.borderColor = "white";
+    }
+
+    this.backgroundImage.displayWidth = config.width;
+    this.backgroundImage.displayHeight = config.height;
 
     oldMoney = cityMoney
 }

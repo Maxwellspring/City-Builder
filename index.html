@@ -5,28 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.88.2/dist/phaser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.88.2/dist/phaser.min.js" defer></script>
     <script src="script.js" defer></script>
+    <link rel="shortcut icon" href="media/city favicon.png" type="image/x-icon">
 </head>
 <body>
+    <div id="grid-container">
+        <div id="grid">
+            <!-- <canvas></canvas> -->
+        </div>
+    </div>
+    
     <!-- <p>yeag</p> -->
     <div id="OSUI-Holder">
         <section id="onscreenUI">
-            <section>
+            <section class="menu-Element">
                 <p id="power">Power: -/-</p>
                 <p id="pop">population: -/-</p>
                 <p id="money">Money: -/-</p>
                 <p id="moneydiff">gain/loss: -/-</p>
                 <p id="tell"></p>
             </section>
-            <p>pick a structure</p>
-            <select name="GUH" id="Dropdown">
-                <option value="0">blank</option>
-                <option value="1">house</option>
-                <option value="2">office</option>
-                <option value="3">power</option>
-                <option value="20">road</option>
-            </select>
+            <section class="menu-Element">
+                <p>Pick a structure</p>
+                <select name="GUH" id="Dropdown">
+                    <option value="0">blank</option>
+                    <option value="1">house</option>
+                    <option value="2">office</option>
+                    <option value="3">power</option>
+                    <option value="20">road</option>
+                </select>
+            </section>
+            <section class="menu-Element" id="pause-play">
+                <button id="pause" onclick="gamePause()">Pause</button>
+                <button id="play" onclick="gamePlay()">Play</button>
+                <button id="update" onclick="gameUpdate()">Update 2 Ticks</button>
+            </section>
         </section>
      </div>
 </body>
