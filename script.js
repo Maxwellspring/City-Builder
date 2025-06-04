@@ -84,11 +84,11 @@ function gameUpdate() {
         updateButton.style.color = "white";
         updateButton.style.backgroundColor = "orange";
         updateButton.style.borderColor = "white";
-    
+
         pauseButton.style.color = "black";
         pauseButton.style.backgroundColor = "white";
         pauseButton.style.borderColor = "black";
-    
+
         playButton.style.color = "black";
         playButton.style.backgroundColor = "white";
         playButton.style.borderColor = "black";
@@ -109,10 +109,24 @@ function preload() {
     this.load.image("Atlas", "media/5x5 tile map V6.png");
 }
 
-let cityMoney = 10000
-let oldMoney = 10000
+let cityMoney = 100000000
+let oldMoney = 100000000
 
 const roadValues = {};
+
+
+
+function getTileIndex(mapData, layer, x, y) {
+    if (x < 0 || y < 0 || x >= mapData[0].length || y >= mapData.length) {
+        return -1; // Indicate out of bounds or no tile
+    }
+    return layer.getTileAt(x, y)?.index;
+}
+
+// Helper to check if a tile index is a road tile (adjust range if needed)
+const isRoadTile = (tileIndex) => tileIndex >= 20 && tileIndex <= 24;
+
+
 
 function create() {
 
@@ -133,9 +147,9 @@ function create() {
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -167,18 +181,7 @@ function create() {
         changeTile = parseInt(event.target.value);
     });
 
-    // Helper function to safely get tile index, handling out of bounds
-    const getTileIndex = (x, y) => {
-        if (x < 0 || y < 0 || x >= this.mapData[0].length || y >= this.mapData.length) {
-            return -1; // Indicate out of bounds or no tile
-        }
-        // Access this.layer here because getTileIndex is a const within create's scope,
-        // and this.layer is defined.
-        return this.layer.getTileAt(x, y)?.index;
-    };
 
-    // Helper to check if a tile index is a road tile (adjust range if needed)
-    const isRoadTile = (tileIndex) => tileIndex >= 20 && tileIndex <= 24;
 
 
 
@@ -213,16 +216,16 @@ function create() {
 
         if (tileToPlace != 0) {
             console.warn("tile to place is NOT blank")
-            let tileindexcheck = getTileIndex(tileX, tileY); // Get the tile index at the clicked position
+            let tileindexcheck = getTileIndex(this.mapData, this.layer, tileX, tileY); // Get the tile index at the clicked position
             if (tileindexcheck != 0) {
                 console.warn("tile at location clicked is NOT blank")
                 tell("Obscured")
-                console.log(getTileIndex(tileX, tileY));
-                console.log(`Tile at (${tileX}, ${tileY}) has index: ${getTileIndex(tileX, tileY)}`);
+                console.log(getTileIndex(this.mapData, this.layer, tileX, tileY));
+                console.log(`Tile at (${tileX}, ${tileY}) has index: ${getTileIndex(this.mapData, this.layer, tileX, tileY)}`);
                 return // Log the tile index at the clicked position
             }
         }
-
+        let largestValue = null; // Initialize largestValue to null for road logic
         // --- Determine Tile to Place and its Rotation for the CLICKED TILE ---
         if (changeTile === 0) {
             // If the user selected 'blank' (0) from the dropdown, always place a blank tile.
@@ -232,35 +235,34 @@ function create() {
             // If the user selected a road tile type (20-24) from the dropdown
             let surroundingRoadsClick = [];
             // Check for surrounding *existing* road tiles to determine the new road's shape
-            if (isRoadTile(getTileIndex(tileX - 1, tileY))) surroundingRoadsClick.push(left);
-            if (isRoadTile(getTileIndex(tileX, tileY - 1))) surroundingRoadsClick.push(up);
-            if (isRoadTile(getTileIndex(tileX + 1, tileY))) surroundingRoadsClick.push(right);
-            if (isRoadTile(getTileIndex(tileX, tileY + 1))) surroundingRoadsClick.push(down);
+            if (isRoadTile(getTileIndex(this.mapData, this.layer, tileX - 1, tileY))) surroundingRoadsClick.push(left);
+            if (isRoadTile(getTileIndex(this.mapData, this.layer, tileX, tileY - 1))) surroundingRoadsClick.push(up);
+            if (isRoadTile(getTileIndex(this.mapData, this.layer, tileX + 1, tileY))) surroundingRoadsClick.push(right);
+            if (isRoadTile(getTileIndex(this.mapData, this.layer, tileX, tileY + 1))) surroundingRoadsClick.push(down);
 
             let values = [];
 
-// Collect values from the surrounding tiles
-if (isRoadTile(getTileIndex(tileX - 1, tileY))) {
-    const leftValue = this.layer.getTileAt(tileX - 1, tileY)?.properties?.serial;
-    if (leftValue != undefined) values.push(leftValue);
-}
-if (isRoadTile(getTileIndex(tileX, tileY - 1))) {
-    const upValue = this.layer.getTileAt(tileX, tileY - 1)?.properties?.serial;
-    if (upValue != undefined) values.push(upValue);
-}
-if (isRoadTile(getTileIndex(tileX + 1, tileY))) {
-    const rightValue = this.layer.getTileAt(tileX + 1, tileY)?.properties?.serial;
-    if (rightValue != undefined) values.push(rightValue);
-}
-if (isRoadTile(getTileIndex(tileX, tileY + 1))) {
-    const downValue = this.layer.getTileAt(tileX, tileY + 1)?.properties?.serial;
-    if (downValue != undefined) values.push(downValue);
-}
+            // Collect values from the surrounding tiles
+            if (isRoadTile(getTileIndex(this.mapData, this.layer, tileX - 1, tileY))) {
+                const leftValue = this.layer.getTileAt(tileX - 1, tileY)?.properties?.serial;
+                if (leftValue != undefined) values.push(leftValue);
+            }
+            if (isRoadTile(getTileIndex(this.mapData, this.layer, tileX, tileY - 1))) {
+                const upValue = this.layer.getTileAt(tileX, tileY - 1)?.properties?.serial;
+                if (upValue != undefined) values.push(upValue);
+            }
+            if (isRoadTile(getTileIndex(this.mapData, this.layer, tileX + 1, tileY))) {
+                const rightValue = this.layer.getTileAt(tileX + 1, tileY)?.properties?.serial;
+                if (rightValue != undefined) values.push(rightValue);
+            }
+            if (isRoadTile(getTileIndex(this.mapData, this.layer, tileX, tileY + 1))) {
+                const downValue = this.layer.getTileAt(tileX, tileY + 1)?.properties?.serial;
+                if (downValue != undefined) values.push(downValue);
+            }
 
-// Find the largest value
-const largestValue = values.length > 0 ? Math.max(...values) : null;
-
-console.log(`Largest value: ${largestValue}`);
+            // Find the largest value
+            largestValue = values.length > 0 ? Math.max(...values) : null;
+            console.log(`Largest value: ${largestValue}`);
 
             function p(value) { return surroundingRoadsClick.includes(value); }
 
@@ -304,17 +306,17 @@ console.log(`Largest value: ${largestValue}`);
 
         if (changeTile < 20) {
             if (changeTile == 0) {
-                if (getTileIndex(tileX, tileY) == 0) {
+                if (getTileIndex(this.mapData, this.layer, tileX, tileY) == 0) {
 
-                } else if (getTileIndex(tileX, tileY) == 1) {
+                } else if (getTileIndex(this.mapData, this.layer, tileX, tileY) == 1) {
                     tell("house demolished")
                     cityMoney += 1000 / 2;
 
-                } else if (getTileIndex(tileX, tileY) == 2) {
+                } else if (getTileIndex(this.mapData, this.layer, tileX, tileY) == 2) {
                     tell("commercial demolished")
                     cityMoney += 1700 / 2;
 
-                } else if (getTileIndex(tileX, tileY) == 3) {
+                } else if (getTileIndex(this.mapData, this.layer, tileX, tileY) == 3) {
                     tell("power plant demolished")
                     cityMoney += 3000 / 2;
 
@@ -336,13 +338,13 @@ console.log(`Largest value: ${largestValue}`);
         }
         oldMoney = cityMoney
 
+        let chosenNumber // Default value for the tile's serial property
 
-        let chosenNumber = Math.floor(Math.random() * 1000000); // Generate a random number for the tile's serial property
-
-
-        // If changeTile is not 0 AND not a road tile (e.g., a "house" tile),
-        // then tileToPlace remains its initial value of 'changeTile', and rotation is 0.
-        // No special road logic applies.
+        if (largestValue != null) {
+            chosenNumber = largestValue;
+        } else {
+            chosenNumber = Math.floor(Math.random() * 1000000);
+        }
 
         // update the internal mapData array and then the layer for the CLICKED TILE
         this.mapData[tileY][tileX] = tileToPlace;
@@ -354,11 +356,11 @@ console.log(`Largest value: ${largestValue}`);
         const newClickedTile = this.layer.getTileAt(tileX, tileY);
 
         newClickedTile.properties = { serial: chosenNumber }; // Mark the tile as placed
-        
+
         if (newClickedTile) {
             newClickedTile.rotation = Phaser.Math.DegToRad(rotToApply);
         }
-        console.log(`Placed tile at (${tileX}, ${tileY}) with index ${tileToPlace} and rotation ${rotToApply} along with the serial number ${ chosenNumber }`);
+        console.log(`Placed tile at (${tileX}, ${tileY}) with index ${tileToPlace} and rotation ${rotToApply} along with the serial number ${chosenNumber}`);
 
         // --- Re-evaluate and update surrounding tiles ---
         console.log("================================ Finished Placing Tile, Now Checking For Neighbor updates ================================");
@@ -389,12 +391,14 @@ console.log(`Largest value: ${largestValue}`);
                 return;
             }
 
+
+
             let surroundingRoadsCheck = [];
             // Check for surrounding *existing* road tiles for THIS neighbor
-            if (isRoadTile(getTileIndex(x - 1, y))) surroundingRoadsCheck.push(left);
-            if (isRoadTile(getTileIndex(x, y - 1))) surroundingRoadsCheck.push(up);
-            if (isRoadTile(getTileIndex(x + 1, y))) surroundingRoadsCheck.push(right);
-            if (isRoadTile(getTileIndex(x, y + 1))) surroundingRoadsCheck.push(down);
+            if (isRoadTile(getTileIndex(this.mapData, this.layer, x - 1, y))) surroundingRoadsCheck.push(left);
+            if (isRoadTile(getTileIndex(this.mapData, this.layer, x, y - 1))) surroundingRoadsCheck.push(up);
+            if (isRoadTile(getTileIndex(this.mapData, this.layer, x + 1, y))) surroundingRoadsCheck.push(right);
+            if (isRoadTile(getTileIndex(this.mapData, this.layer, x, y + 1))) surroundingRoadsCheck.push(down);
 
             function o(value) { return surroundingRoadsCheck.includes(value); }
 
@@ -431,12 +435,6 @@ console.log(`Largest value: ${largestValue}`);
                 else if (o(right)) newRotVal = 0;
                 else if (o(down)) newRotVal = 90;
             } else {
-                // If a road tile now has no road neighbors, it should either become blank (if you removed it)
-                // or a single road tile (20) if it just lost connections but is still logically a road.
-                // This is the tricky part for "deleting" roads: when a road is removed, its neighbors become "dead ends"
-                // or change shape. If a road simply loses all connections, it becomes a single road (20).
-                // If it was explicitly set to 0 by the user click, that already happened for the clicked tile.
-                // For neighbors, if they were roads and now have no road connections, they should become single roads (20).
                 newChosenRoad = 20; // Default to single road if no connections
                 newRotVal = 0;
             }
@@ -456,21 +454,80 @@ console.log(`Largest value: ${largestValue}`);
     });
 }
 
+// const getTileIndex = (x, y) => {
+//     if (x < 0 || y < 0 || x >= this.mapData[0].length || y >= this.mapData.length) {
+//         return -1; // Indicate out of bounds or no tile
+//     }
+//     // Access this.layer here because getTileIndex is a const within create's scope,
+//     // and this.layer is defined.
+//     return this.layer.getTileAt(x, y)?.index;
+// };
+
+// Helper function to safely get tile index, handling out of bounds
 
 
 
 
+
+function surroundingRoadSerials(mapData, layer, tileX, tileY) {
+    // Collect serial numbers from surrounding road tiles
+    const surroundingRoads = [];
+    if (isRoadTile(getTileIndex(mapData, layer, tileX - 1, tileY))) {
+        const leftTile = layer.getTileAt(tileX - 1, tileY);
+        if (leftTile) surroundingRoads.push(leftTile.properties.serial);
+    }
+    if (isRoadTile(getTileIndex(mapData, layer, tileX, tileY - 1))) {
+        const upTile = layer.getTileAt(tileX, tileY - 1);
+        if (upTile) surroundingRoads.push(upTile.properties.serial);
+    }
+    if (isRoadTile(getTileIndex(mapData, layer, tileX + 1, tileY))) {
+        const rightTile = layer.getTileAt(tileX + 1, tileY);
+        if (rightTile) surroundingRoads.push(rightTile.properties.serial);
+    }
+    if (isRoadTile(getTileIndex(mapData, layer, tileX, tileY + 1))) {
+        const downTile = layer.getTileAt(tileX, tileY + 1);
+        if (downTile) surroundingRoads.push(downTile.properties.serial);
+    }
+    return surroundingRoads;
+}
+
+function containsAny(arr1, arr2) {
+    if (!Array.isArray(arr1) || !Array.isArray(arr2)) {
+        console.error("Both inputs must be arrays.");
+        return false; // Ensure both inputs are arrays
+
+    }
+    return arr1.some(item => arr2.includes(item))
+}
+
+let erre = [1, 2, 3]
+let erre2 = [2, 3, 4]
 
 // console.groupCollapsed("sd");
 function update() {
     // Game loop logic, nothing needed here for this functionality
     function checkTile(index) {
         let powerPlants = 0; // Initialize a counter for tiles with index 4
+        let powerPlantSurroundingSerials = []
+        let houseSurroundingSerials = []
         for (let y = 0; y < this.mapData.length; y++) {
             for (let x = 0; x < this.mapData[y].length; x++) {
                 if (this.mapData[y][x] == index) {
                     powerPlants++
-                    // return true; // Found a tile with index 4
+                    console.log(surroundingRoadSerials(this.mapData, this.layer, x, y));
+
+                    if (index == 3) { // Assuming index 3 is for power plants
+                        powerPlantSurroundingSerials = surroundingRoadSerials(this.mapData, this.layer, x, y);
+                        console.log(`Power Plant at (${x}, ${y}) with serials:`, powerPlantSurroundingSerials);
+                    }
+                    if (index == 1) {
+                        houseSurroundingSerials = surroundingRoadSerials(this.mapData, this.layer, x, y);
+                        console.log(`House at (${x}, ${y}) with serials:`, houseSurroundingSerials);
+                        console.log(houseSurroundingSerials.typeof + " array")
+                    }
+                    if (containsAny(powerPlantSurroundingSerials, houseSurroundingSerials)) {
+                        console.log(`Road serials found around tile (${x}, ${y})`);
+                    }
                 }
             }
         }
