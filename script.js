@@ -107,6 +107,7 @@ function preload() {
     this.load.image("debug", "media/debug.png");
     this.load.image("testTile", "media/5x5 tile map.png");
     this.load.image("Atlas", "media/5x5 tile map V7.png");
+    this.load.image("ExtraSpace", "media/extra space.png");
 }
 
 let cityMoney = 100000
@@ -135,7 +136,7 @@ function create() {
 
     document.addEventListener('contextmenu', event => event.preventDefault());
 
-    this.backgroundImage = this.add.image(0, 0, "smile").setOrigin(0, 0);
+    this.backgroundImage = this.add.image(0, 0, "ExtraSpace").setOrigin(0, 0);
     this.backgroundImage.displayWidth = config.width;
     this.backgroundImage.displayHeight = config.height;
 
