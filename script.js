@@ -106,11 +106,11 @@ function preload() {
     this.load.image("frown", "media/bye.png");
     this.load.image("debug", "media/debug.png");
     this.load.image("testTile", "media/5x5 tile map.png");
-    this.load.image("Atlas", "media/5x5 tile map V6.png");
+    this.load.image("Atlas", "media/5x5 tile map V7.png");
 }
 
-let cityMoney = 100000000
-let oldMoney = 100000000
+let cityMoney = 100000
+let oldMoney = 100000
 
 const roadValues = {};
 
@@ -147,7 +147,7 @@ function create() {
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -180,6 +180,30 @@ function create() {
         console.log(`Selected Value: ${event.target.value}`);
         changeTile = parseInt(event.target.value);
     });
+    // this.layer.putTileAt(19, x, y)
+
+    for (let y = 0; y < this.mapData.length; y++) {
+        for (let x = 0; x < this.mapData[y].length; x++) {
+            if (this.mapData[y][x] == 0) {
+                let randomNumber1 = Math.random() * 10
+                if (randomNumber1 > 4) {
+                    // says that a tree will be placed
+                    let randomNumber2 = Math.random() * 10
+                    if (randomNumber2 > 1) { // place big
+                        this.layer.putTileAt(19, x, y)
+                        let randomNumber3 = Math.random() * 10
+                        if (randomNumber3 > 2) { // place medium
+                            this.layer.putTileAt(18, x, y)
+                            let randomNumber4 = Math.random() * 10
+                            if (randomNumber4 > 6) { // place small
+                                this.layer.putTileAt(17, x, y)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 
 
@@ -302,7 +326,9 @@ function create() {
             }
         }
 
-
+        // function GTIC(x, y) {
+        //     getTileIndex(this.mapData, this.layer, x, y)
+        // }
 
         if (changeTile < 20) {
             if (changeTile == 0) {
@@ -319,8 +345,10 @@ function create() {
                 } else if (getTileIndex(this.mapData, this.layer, tileX, tileY) == 3) {
                     tell("power plant demolished")
                     cityMoney += 3000 / 2;
-
-                } else {
+                } else if (getTileIndex(this.mapData, this.layer, tileX, tileY) >= 17 || getTileIndex(this.mapData, this.layer, tileX, tileY) <= 19) {
+                    cityMoney -= 100
+                    tell("tree cut down")
+                } else if (getTileIndex(this.mapData, this.layer, tileX, tileY) >= 20) {
                     tell("road demolished")
                     // Default demolition cost for other tiles
                     return
@@ -512,22 +540,28 @@ function update() {
         let houseSurroundingSerials = []
         for (let y = 0; y < this.mapData.length; y++) {
             for (let x = 0; x < this.mapData[y].length; x++) {
+                
                 if (this.mapData[y][x] == index) {
+                    
                     powerPlants++
-                    console.log(surroundingRoadSerials(this.mapData, this.layer, x, y));
+                    // console.log(surroundingRoadSerials(this.mapData, this.layer, x, y));
 
                     if (index == 3) { // Assuming index 3 is for power plants
                         powerPlantSurroundingSerials = surroundingRoadSerials(this.mapData, this.layer, x, y);
-                        console.log(`Power Plant at (${x}, ${y}) with serials:`, powerPlantSurroundingSerials);
+                        // console.log(`Power Plant at (${x}, ${y}) with serials:`, powerPlantSurroundingSerials);
                     }
                     if (index == 1) {
                         houseSurroundingSerials = surroundingRoadSerials(this.mapData, this.layer, x, y);
-                        console.log(`House at (${x}, ${y}) with serials:`, houseSurroundingSerials);
-                        console.log(houseSurroundingSerials.typeof + " array")
+                        // console.log(`House at (${x}, ${y}) with serials:`, houseSurroundingSerials);
+                        // console.log(houseSurroundingSerials.typeof + " array")
                     }
                     if (containsAny(powerPlantSurroundingSerials, houseSurroundingSerials)) {
-                        console.log(`Road serials found around tile (${x}, ${y})`);
+                        // console.log(`Road serials found around tile (${x}, ${y})`);
                     }
+                }
+                if (getTileIndex(this.mapData, this.layer, x, y) >= 17 && getTileIndex(this.mapData, this.layer, x, y) <= 19) {
+                    let randomNumber5 = Math.random() * 10
+                    // if (randomNumber5 > 5)
                 }
             }
         }
@@ -564,7 +598,7 @@ function update() {
     money.innerHTML = `Money: ${cityMoney / 100}`; // Update the money display\
     mondf.innerHTML = `gain/loss: ${moneydifference}`
 
-    console.log(`oldMoney: ${oldMoney} currentMoney: ${cityMoney}`)
+    // console.log(`oldMoney: ${oldMoney} currentMoney: ${cityMoney}`)
     if (cityMoney) {
         if (cityMoney < 0) {
             if (cityMoney < oldMoney) {
